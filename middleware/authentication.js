@@ -1,17 +1,25 @@
+const User = require('../models/User')
 const jwt = require('jsonwebtoken')
-require('express-async-errors')
+const { UnauthenticatedError } = require('../errors')
 require('dotenv')
-const {UnauthenticatedError} = require('../errors')
+require('express-async-errors')
 
 
-const authentication = async(req, res, next) =>{
-    const authHeader = req.headers.authorization
-    if(!authHeader || !authHeader.startsWith('Bearer')){
-        throw new UnauthenticatedError('no token present')
-    }
-    const token = authHeader.split(' ')[1]
-
-    const decoded = jwt.verify(token, process.env.WEB_TOKEN)
-    const {username} = decoded
-    req.user = {username}
+const authentication = async(req, res, next)=>{
+const authHeader = req.headers.authorization
+if(!authHeader || !authHeader.startsWith('Bearer')){
+    throw new UnauthenticatedError('missing token!')
 }
+const token = authHeader.split(' ')[1]
+try{
+    const decoded =  jwt.verify(token, process.env.JWT)
+    req.user = {userId: decoded.userId, name:decoded.name}
+    next()
+}
+catch(error){
+    throw new UnauthenticatedError('incorrect token!')
+}
+}
+
+
+module.exports = authentication
