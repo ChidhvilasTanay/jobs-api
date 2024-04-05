@@ -1,3 +1,5 @@
+// authentication middleware for the other routes (except auth).
+
 const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 const { UnauthenticatedError } = require('../errors')
@@ -13,6 +15,9 @@ if(!authHeader || !authHeader.startsWith('Bearer')){
 const token = authHeader.split(' ')[1]
 try{
     const decoded =  jwt.verify(token, process.env.JWT)
+    //  to fetch more info from the db.(we remove the passcode)
+    //const user = User.findById(decoded._id).select('-password')
+    //req.user = user
     req.user = {userId: decoded.userId, name:decoded.name}
     next()
 }

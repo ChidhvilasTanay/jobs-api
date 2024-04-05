@@ -21,17 +21,24 @@ password:{
 }
 })
 
+
+//the code below hashes the entered password. (like initialization...maybe)
 userSchema.pre('save', async function(){
+    // generating hash to store in db.
     const salt = await bcrypt.genSalt(10)
     this.password = await bcrypt.hash(this.password, salt)
 })
 
-// instance methods
+
+// instance method used in both registration and login i.e everytime a user successfully logs in.
 userSchema.methods.createJWT = function (){
     return jwt.sign({userId: this._id, name:this.name}, process.env.JWT,{expiresIn:process.env.JWT_TIME})
 }
 
+
+//instance method used in login
 userSchema.methods.comparePasswords = async function(reqPassword){
+    // comparing hash to allow authorized users.
     const isMatch = await bcrypt.compare(reqPassword, this.password)
     return isMatch
 }
