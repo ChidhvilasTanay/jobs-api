@@ -11,7 +11,28 @@ const register = async(req, res) => {
 }
 
 const login = async(req, res)=>{
-    res.send('login')
+    const {email, password} = req.body
+    if(!email || !password){
+        throw new BadRequestError('please provide email/ password!')
+    }
+
+    const user = await User.findOne({email})
+
+    // throw error if there exists no user with the requested email.
+    if(!user){
+        throw new UnauthenticatedError('user not found!')
+    }
+    
+    const isPassCorrect = await user.comparePasswords(password)
+
+
+    // throw error if the password is incorrect.
+    if(!isPassCorrect){
+        throw new UnauthenticatedError('Invalid password')
+    }
+    const token = user.createJWT()
+    res.status(StatusCodes.OK).json({user:{name:user.name}, token})
+
 }
 
 module.exports = {register, login}
